@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brisa</title>
+  <link rel="icon" id="favicon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="nav vidro sobre-foto" id="nav">
+  <a href="#" class="marca">brisa</a>
+  <nav>
+    <a href="#biblioteca">Biblioteca</a>
+    <a href="#sobre">Sobre</a>
+    <a href="#instalar">Instalar</a>
+  </nav>
+  <button class="tema vidro" id="som" type="button" aria-pressed="true">Som</button>
+  <button class="tema vidro" id="tema" type="button">Auto</button>
+</header>
+
+<section class="hero sobre-foto" id="baixar">
+  <div class="fotos" aria-hidden="true">
+    <div class="foto" data-periodo="amanhecer" style="background-image:url('{{ url_for('static', filename='img/amanhecer.jpg') }}')"></div>
+    <div class="foto" data-periodo="dia" style="background-image:url('{{ url_for('static', filename='img/dia.jpg') }}')"></div>
+    <div class="foto" data-periodo="entardecer" style="background-image:url('{{ url_for('static', filename='img/entardecer.jpg') }}')"></div>
+    <div class="foto" data-periodo="noite" style="background-image:url('{{ url_for('static', filename='img/noite.jpg') }}')"></div>
+  </div>
+
+  <div class="hero-conteudo">
+    <p class="rotulo-topo">Conversor de áudio para uso pessoal</p>
+    <h1>Ouça offline<br>o que você gosta.</h1>
+    <p class="lead">Cole o endereço de um vídeo do YouTube e baixe o áudio em MP3, com capa e nome do artista.</p>
+
+    <form class="baixador vidro" id="form">
+      <label for="url" class="sr">Link do YouTube</label>
+      <input type="url" id="url" placeholder="Cole o link do vídeo" required autocomplete="off">
+      <button class="btn" type="submit" id="enviar">Baixar</button>
+    </form>
+    <p class="dica">Você também pode colar com Ctrl+V em qualquer parte da página ou arrastar o link para cá.</p>
+    <div class="estado" id="estado" hidden>
+      <!-- Vini, o mascote da Brisa: um disquinho de vinil com fone de ouvido -->
+      <svg class="mascote" id="mascote" data-humor="procurando" viewBox="0 0 110 100" aria-hidden="true">
+        <ellipse class="sombra" cx="50" cy="95" rx="20" ry="3"/>
+        <g class="corpo">
+          <g class="perna"><path d="M43 82 v8 h-5"/><path d="M57 82 v8 h5"/></g>
+          <g class="braco braco-esq"><path d="M19 58 q-8 5 -9 13"/></g>
+          <g class="braco braco-dir"><path d="M81 58 q7 2 9 9"/>
+            <g class="lupa"><circle cx="95" cy="62" r="6.5"/><path d="M90 67 l-4 5"/></g>
+          </g>
+          <circle class="disco" cx="50" cy="52" r="32"/>
+          <circle class="sulco" cx="50" cy="52" r="27"/>
+          <circle class="sulco" cx="50" cy="52" r="22.5"/>
+          <g class="brilho"><path d="M27 40 A26 26 0 0 1 40 28"/><path d="M73 64 A26 26 0 0 1 60 76"/></g>
+          <circle class="rotulo-disco" cx="50" cy="52" r="17"/>
+          <g class="rosto">
+            <g class="olhos-abertos">
+              <circle class="esclera" cx="44" cy="49" r="3.8"/><circle class="esclera" cx="56" cy="49" r="3.8"/>
+              <g class="pupilas"><circle cx="44" cy="49" r="2"/><circle cx="56" cy="49" r="2"/></g>
+            </g>
+            <g class="olhos-felizes"><path d="M40.5 50 q3.5 -4.5 7 0"/><path d="M52.5 50 q3.5 -4.5 7 0"/></g>
+            <g class="olhos-tristes"><path d="M40.5 48 q3.5 2.5 7 1"/><path d="M52.5 49 q3.5 1.5 7 -1"/></g>
+            <path class="boca boca-normal" d="M46 57 q4 3 8 0"/>
+            <path class="boca boca-feliz" d="M44.5 56 q5.5 6.5 11 0 z"/>
+            <path class="boca boca-triste" d="M46 59.5 q4 -3 8 0"/>
+            <circle class="bochecha" cx="40" cy="55" r="2"/><circle class="bochecha" cx="60" cy="55" r="2"/>
+          </g>
+          <g class="fone"><path class="arco" d="M23 46 A27 27 0 0 1 77 46"/><rect x="17" y="41" width="8" height="15" rx="3"/><rect x="75" y="41" width="8" height="15" rx="3"/></g>
+          <path class="gota" d="M78 30 q4 6 0 8 q-4 -2 0 -8z"/>
+        </g>
+        <g class="notas"><text x="80" y="30">♪</text><text x="14" y="36">♫</text><text x="86" y="50">♪</text></g>
+        <g class="faiscas"><path d="M12 20 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z"/><path d="M92 14 l1.5 3.5 l3.5 1.5 l-3.5 1.5 l-1.5 3.5 l-1.5 -3.5 l-3.5 -1.5 l3.5 -1.5z"/><path d="M98 44 l1 2.5 l2.5 1 l-2.5 1 l-1 2.5 l-1 -2.5 l-2.5 -1 l2.5 -1z"/></g>
+      </svg>
+      <div class="status vidro" id="status" role="status"></div>
+    </div>
+  </div>
+
+  <a class="credito vidro" id="credito" target="_blank" rel="noopener"></a>
+</section>
+
+<main>
+  <section class="secao" id="biblioteca">
+    <div class="cabecalho-secao">
+      <h2>Biblioteca</h2>
+      <span class="contagem" id="contagem"></span>
+    </div>
+    <div class="capas" id="capas"></div>
+    <p class="vazio" id="vazio" hidden>Nenhuma música ainda. As que você baixar aparecem aqui.</p>
+  </section>
+
+  <section class="secao sobre" id="sobre">
+    <figure>
+      <img src="{{ url_for('static', filename='img/toca-discos.jpg') }}" alt="Toca-discos tocando um vinil azul" loading="lazy">
+      <figcaption class="vidro sobre-foto">Foto: M. Johnson, CC BY 2.0</figcaption>
+    </figure>
+    <div>
+      <h2>Como funciona</h2>
+      <p>O programa roda no seu computador, usa o <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a> para buscar o áudio e o ffmpeg para converter. Sem anúncio, sem cadastro, sem enviar nada para servidores de terceiros.</p>
+      <dl class="detalhes">
+        <div><dt>Qualidade</dt><dd>MP3 a 320 kbps, a partir da melhor faixa de áudio disponível.</dd></div>
+        <div><dt>Capa e dados</dt><dd>A miniatura do vídeo vira a capa; título e canal vão para os metadados.</dd></div>
+        <div><dt>Playlists</dt><dd>Se o link tiver uma playlist junto, só o vídeo aberto é baixado.</dd></div>
+        <div><dt>Onde fica</dt><dd>Na pasta <code>musicas/</code>, ao lado do programa.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="secao estreita" id="instalar">
+    <h2>Instalar</h2>
+    <p>Precisa de Python 3 e ffmpeg. Escolha o sistema:</p>
+    <div class="terminal">
+      <div class="tabs" role="tablist">
+        <button class="tab ativo" data-os="win" type="button">Windows</button>
+        <button class="tab" data-os="mac" type="button">macOS</button>
+        <button class="tab" data-os="linux" type="button">Linux</button>
+        <button class="copiar" id="copiar" type="button">Copiar</button>
+      </div>
+      <pre><code id="comando"></code></pre>
+    </div>
+
+    <h2 class="titulo-faq">Perguntas</h2>
+    <details><summary>Parou de funcionar. O que faço?</summary><p>O YouTube muda o site com frequência. Atualize com <code>pip install -U yt-dlp</code> e tente de novo.</p></details>
+    <details><summary>Aceita link do YouTube Music?</summary><p>Sim. Também aceita links curtos (<code>youtu.be</code>) e da versão para celular.</p></details>
+    <details><summary>Dá para baixar várias de uma vez?</summary><p>Pelo terminal, sim: <code>python baixar_musica.py link1 link2 link3</code>.</p></details>
+    <details><summary>Posso baixar qualquer vídeo?</summary><p>Baixe apenas o que você tem direito de usar e respeite os termos do YouTube e os direitos dos artistas.</p></details>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="rodape-linha">
+    <span class="marca">brisa</span>
+    <span>Projeto pessoal. Não é afiliado ao YouTube.</span>
+  </div>
+  <p class="creditos">
+    Fotos via Wikimedia Commons:
+    <a href="https://commons.wikimedia.org/wiki/File:Desenka_meadow_2019_G2.jpg" target="_blank" rel="noopener">George Chernilevsky</a> (domínio público),
+    <a href="https://commons.wikimedia.org/wiki/File:Colors_Of_Spring_(109621705).jpeg" target="_blank" rel="noopener">Ferdinand</a> (CC BY 3.0),
+    <a href="https://commons.wikimedia.org/wiki/File:Fields_Golden_Hour_(95316529).jpeg" target="_blank" rel="noopener">Mahesh Gudladona</a> (CC BY 3.0),
+    <a href="https://commons.wikimedia.org/wiki/File:Night_Sky_-_Boney_Mountain_%26_Milky_Way_(11074300594).jpg" target="_blank" rel="noopener">Santa Monica Mountains NRA</a> (domínio público),
+    <a href="https://commons.wikimedia.org/wiki/File:Audio-Technica_turntable_playing_coloured_vinyl.jpg" target="_blank" rel="noopener">M. Johnson</a> (CC BY 2.0).
+  </p>
+</footer>
+
+<!-- Player fixo -->
+<div class="player vidro" id="player" hidden>
+  <img id="player-capa" alt="">
+  <div class="player-info">
+    <span id="player-titulo"></span>
+    <input type="range" id="player-barra" min="0" max="100" value="0" step="0.1" aria-label="Posição">
+  </div>
+  <span class="player-tempo" id="player-tempo">0:00</span>
+  <button id="player-botao" type="button" aria-label="Pausar">Pausar</button>
+  <button id="player-fechar" type="button" aria-label="Fechar">×</button>
+</div>
+
+<div class="soltar" id="soltar" hidden><p class="vidro sobre-foto">Solte o link para baixar</p></div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

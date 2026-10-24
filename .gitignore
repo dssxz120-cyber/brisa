@@ -1,0 +1,20 @@
+# Músicas baixadas: são de cada usuário e têm direitos autorais. Nunca publique.
+musicas/
+*.mp3
+*.m4a
+*.webm
+*.opus
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.env
