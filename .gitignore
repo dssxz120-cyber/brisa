@@ -7,6 +7,8 @@ musicas/
 
 # Python
 __pycache__/
+build/
+dist/
 *.py[cod]
 .venv/
 venv/

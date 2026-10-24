@@ -1,0 +1,82 @@
+# Gera os executáveis para Windows, Linux e macOS e publica uma Release.
+# Dispara ao enviar uma tag de versão:  git tag v1.0.0 && git push origin v1.0.0
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Executável ${{ matrix.artefato }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artefato: brisa-windows-x64
+          - os: ubuntu-22.04 # glibc mais antiga = roda em mais distribuições
+            artefato: brisa-linux-x64
+          - os: macos-latest
+            artefato: brisa-macos-arm64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Gerar executável
+        run: pyinstaller brisa.spec --noconfirm --clean
+
+      - name: Verificar executável
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then ./dist/brisa.exe --verificar; else ./dist/brisa --verificar; fi
+
+      - name: Empacotar
+        shell: bash
+        run: |
+          mkdir pacote
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cp dist/brisa.exe "pacote/${{ matrix.artefato }}.exe"
+          else
+            chmod +x dist/brisa
+            tar -czf "pacote/${{ matrix.artefato }}.tar.gz" -C dist brisa
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artefato }}
+          path: pacote/*
+
+  release:
+    name: Publicar Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: pacote
+          merge-multiple: true
+
+      - name: Gerar somas de verificação
+        run: cd pacote && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+
+      - name: Criar Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" pacote/* \
+            --title "Brisa $GITHUB_REF_NAME" \
+            --notes-file docs/notas-da-versao.md

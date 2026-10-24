@@ -6,6 +6,7 @@ Uso:
 """
 
 import os
+import shutil
 import sys
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -15,8 +16,21 @@ try:
 except ImportError:
     sys.exit("Dependência ausente. Rode: pip install -r requirements.txt")
 
+# No executável (PyInstaller), as músicas ficam ao lado do .exe, não na pasta temporária
+EMPACOTADO = getattr(sys, "frozen", False)
+PASTA_PROGRAMA = Path(sys.executable).parent if EMPACOTADO else Path(__file__).parent
+
 # Pasta das músicas: pode ser trocada com a variável de ambiente BRISA_PASTA
-PASTA_DESTINO = Path(os.environ.get("BRISA_PASTA") or Path(__file__).parent / "musicas").resolve()
+PASTA_DESTINO = Path(os.environ.get("BRISA_PASTA") or PASTA_PROGRAMA / "musicas").resolve()
+
+INSTRUCOES_FFMPEG = (
+    "O ffmpeg não está instalado. Instale e abra a Brisa de novo — "
+    "Windows: winget install Gyan.FFmpeg · macOS: brew install ffmpeg · Linux: sudo apt install ffmpeg"
+)
+
+
+def ffmpeg_disponivel() -> bool:
+    return shutil.which("ffmpeg") is not None
 QUALIDADE_KBPS = "320"
 
 HOSTS_YOUTUBE = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
@@ -114,6 +128,8 @@ def baixar(url: str, mostrar_progresso: bool = True, ao_progredir=None) -> dict 
 
 
 def main() -> None:
+    if not ffmpeg_disponivel():
+        sys.exit(INSTRUCOES_FFMPEG)
     links = sys.argv[1:]
     if links:
         for url in links:

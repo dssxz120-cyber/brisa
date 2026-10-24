@@ -3,15 +3,25 @@
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 import uuid
+import webbrowser
+from pathlib import Path
 
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 
-from baixar_musica import PASTA_DESTINO, baixar, link_valido
+from baixar_musica import INSTRUCOES_FFMPEG, PASTA_DESTINO, baixar, ffmpeg_disponivel, link_valido
 
-app = Flask(__name__)
+# Dentro do executável, páginas e arquivos estáticos ficam na pasta temporária do PyInstaller
+PASTA_RECURSOS = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+
+app = Flask(
+    __name__,
+    template_folder=str(PASTA_RECURSOS / "templates"),
+    static_folder=str(PASTA_RECURSOS / "static"),
+)
 PASTA_CAPAS = PASTA_DESTINO / ".capas"
 
 # Downloads: id -> {etapa, porcentagem, criado, resultado, erro}
@@ -97,6 +107,8 @@ def api_baixar():
     url = (request.get_json(silent=True) or {}).get("url", "").strip()
     if not link_valido(url):
         return jsonify(ok=False, erro="Esse link não parece ser do YouTube."), 400
+    if not ffmpeg_disponivel():
+        return jsonify(ok=False, erro=INSTRUCOES_FFMPEG), 503
     limpar_tarefas_antigas()
     ativos = sum(1 for t in tarefas.values() if t["etapa"] not in ("pronto", "erro"))
     if ativos >= MAX_DOWNLOADS_SIMULTANEOS:
@@ -149,8 +161,41 @@ def capa(nome):
     return send_from_directory(PASTA_CAPAS, jpg.name)
 
 
-if __name__ == "__main__":
+def verificar() -> int:
+    """Checagem rápida usada no build: o pacote tem tudo de que precisa?"""
+    import yt_dlp.version
+
+    faltando = [p for p in ("templates/index.html", "static/style.css", "static/app.js", "static/img/noite.jpg")
+                if not (PASTA_RECURSOS / p).is_file()]
+    print(f"yt-dlp {yt_dlp.version.__version__}")
+    print(f"ffmpeg: {'encontrado' if ffmpeg_disponivel() else 'não encontrado'}")
+    if faltando:
+        print("Arquivos faltando:", ", ".join(faltando))
+        return 1
+    with app.test_client() as cliente:
+        resposta = cliente.get("/", headers={"Host": "127.0.0.1"})
+        print(f"página inicial: HTTP {resposta.status_code}")
+        return 0 if resposta.status_code == 200 else 1
+
+
+def main() -> None:
+    if "--verificar" in sys.argv:
+        sys.exit(verificar())
+
     porta = int(os.environ.get("BRISA_PORTA", "5000"))
-    print(f"Brisa rodando em http://127.0.0.1:{porta}")
+    endereco = f"http://127.0.0.1:{porta}"
+    print(f"Brisa rodando em {endereco}")
+    print(f"Músicas salvas em: {PASTA_DESTINO}")
+    if not ffmpeg_disponivel():
+        print(f"\nAtenção: {INSTRUCOES_FFMPEG}\n")
+    print("Para fechar, feche esta janela ou aperte Ctrl+C.\n")
+
+    if os.environ.get("BRISA_ABRIR_NAVEGADOR", "1") != "0":
+        threading.Timer(1.2, webbrowser.open, args=(endereco,)).start()
+
     # Só escuta no próprio computador: não exponha na rede (host="0.0.0.0")
     app.run(host="127.0.0.1", port=porta, debug=False, threaded=True)
+
+
+if __name__ == "__main__":
+    main()

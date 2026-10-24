@@ -16,7 +16,15 @@ página bonita que roda no seu próprio computador.
 - **Vini**, o mascote, reage a cada etapa do download, e um som curto avisa quando termina (dá para desligar)
 - **Tudo local**: sem anúncio, sem cadastro, nada é enviado para servidores de terceiros
 
-## Instalação
+## Download rápido (sem instalar Python)
+
+Baixe o executável do seu sistema na página de
+**[Releases](https://github.com/dssxz120-cyber/brisa/releases/latest)**:
+Windows (`.exe`), Linux e macOS (Apple Silicon). Você só precisa ter o
+**ffmpeg** instalado (veja a tabela abaixo). Abra o programa e o navegador
+abre sozinho.
+
+## Instalação a partir do código
 
 Você precisa de **Python 3.10+** e do **ffmpeg**.
 
@@ -54,6 +62,22 @@ As músicas ficam na pasta `musicas/`.
 |---|---|---|
 | `BRISA_PASTA` | `./musicas` | Pasta onde as músicas são salvas |
 | `BRISA_PORTA` | `5000` | Porta do servidor local |
+| `BRISA_ABRIR_NAVEGADOR` | `1` | Use `0` para não abrir o navegador ao iniciar |
+
+## Gerando os executáveis
+
+```bash
+pip install pyinstaller
+pyinstaller brisa.spec      # o executável fica em dist/
+```
+
+Para publicar uma nova versão, envie uma tag; o GitHub Actions gera os
+executáveis dos três sistemas e cria a Release sozinho:
+
+```bash
+git tag v1.1.0
+git push origin v1.1.0
+```
 
 ## Problemas comuns
 
